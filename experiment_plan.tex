@@ -1,0 +1,588 @@
+% ============================================================
+%  第五章：实验评估规划 —— 独立编译版本
+%  本文档描述预期的实验评估方案，不包含实际实验数据。
+%  直接上传到 Overleaf，用 XeLaTeX 编译
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{tocloft}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{ctex}
+\usepackage{fancyhdr}
+\geometry{margin=2.5cm}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=black}
+
+\usepackage{xurl}
+\urlstyle{tt}
+\usepackage{graphicx}
+\usepackage{longtable,tabularx,array,multirow}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage{amssymb,bm}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,shapes.geometric,shapes.symbols,matrix,backgrounds,decorations.pathreplacing}
+
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=2em,itemsep=0.25em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=2em,itemsep=0.25em,topsep=0.25em}
+
+\definecolor{DeepBlue}{HTML}{163A5F}
+\definecolor{TechBlue}{HTML}{2563EB}
+\definecolor{Mint}{HTML}{DDF7EF}
+\definecolor{SoftBlue}{HTML}{E8F1FF}
+\definecolor{SoftOrange}{HTML}{FFF3E0}
+\definecolor{SoftRed}{HTML}{FFE7E7}
+\definecolor{SoftPurple}{HTML}{F0E8FF}
+\definecolor{LineGray}{HTML}{64748B}
+\definecolor{DarkText}{HTML}{0F172A}
+
+\newcommand{\projectname}{基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统}
+\newcommand{\projectshort}{TIGER-Risk}
+\newcommand{\term}[1]{\textbf{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small 基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统}
+\renewcommand{\headrulewidth}{0.6pt}
+\setlength{\headheight}{15pt}
+\setlength{\headsep}{18pt}
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyhead[C]{\small 基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统}
+    \renewcommand{\headrulewidth}{0.6pt}
+}
+
+\begin{document}
+
+% ====================== 5 实验评估规划 ======================
+\clearpage
+\section{实验评估规划}
+
+本章阐述\projectshort 系统的实验评估方案。与分类算法或回归模型的单一指标评测不同，\projectshort 是一个面向新能源锂电池产业链黑天鹅风险推理的端到端智能系统，包含多源数据接入、事件抽取、时序动态图谱构建、Trust Graph 可信度评估、图增强风险传播推理和大语言模型研判报告六个核心模块。因此，本章的实验设计遵循系统级评估范式：\term{提出假设→设计实验→验证假设→分析原因→得出结论}，而非简单堆叠 Accuracy/Precision/Recall 指标。
+
+\begin{figure}[H]
+\centering
+\resizebox{0.92\linewidth}{!}{
+\begin{tikzpicture}[
+    font=\small,
+    box/.style={
+        rectangle,
+        rounded corners=3pt,
+        draw=DeepBlue,
+        thick,
+        fill=SoftBlue,
+        align=center,
+        minimum width=2.6cm,
+        minimum height=0.9cm
+    },
+    core/.style={
+        rectangle,
+        rounded corners=3pt,
+        draw=TechBlue,
+        thick,
+        fill=Mint,
+        align=center,
+        minimum width=2.6cm,
+        minimum height=0.9cm
+    },
+    arr/.style={
+        -{Latex[length=2.2mm]},
+        thick,
+        draw=LineGray
+    }
+]
+
+%-------------------- 第一层 --------------------
+% 缩减了横向间距以适配单栏宽度
+\node[box] (H) {实验假设\\H1--H5};
+\node[core,right=0.4cm of H] (P) {实验协议\\公平性 + 重复性};
+\node[core,right=0.4cm of P] (D) {数据集\\构建与标注};
+
+%-------------------- 第二层 --------------------
+\node[box,below=1.2cm of D] (E1) {实验1:\\事件抽取};
+% 大幅缩减左右侧节点的横向间距，防止图形过宽
+\node[box,left=0.6cm of E1] (E4) {实验4:\\效率分析};
+\node[box,right=0.6cm of E1] (E2) {实验2:\\图谱检索};
+
+%-------------------- 第三层 --------------------
+\node[box,below=1.2cm of E1] (E3) {实验3:\\风险预测};
+
+%-------------------- 第四层 --------------------
+\node[core,below=1.2cm of E3] (CS) {Case Study};
+\node[core,below=1.2cm of CS] (AB) {消融实验\\+ 参数敏感性};
+\node[box,below=1.2cm of AB] (END) {讨论与\\效度威胁};
+
+%================================================
+% 主流程连线
+%================================================
+\draw[arr] (H) -- (P);
+\draw[arr] (P) -- (D);
+
+% 数据集 -> 三个实验 (修复点：使用中继坐标 ++(0,-0.6) 在半路分叉，避免压线)
+\draw[arr] (D.south) -- ++(0,-0.6) -| (E4.north);
+\draw[arr] (D.south) -- (E1.north);
+\draw[arr] (D.south) -- ++(0,-0.6) -| (E2.north);
+
+% 事件抽取 -> 风险预测
+\draw[arr] (E1) -- (E3);
+
+% 三个实验 -> Case Study (底层排线修复)
+\draw[arr] (E4.south) |- (CS.west);
+\draw[arr] (E3) -- (CS);
+% 图谱检索 -> 风险预测 与 Case Study
+% 修复重叠：让到 CS 的线在垂直方向上与 E3 连线共用前半段，避免冗余重绘
+\draw[arr] (E2.south) |- (E3.east);
+\draw[arr] (E3.east) ++(0.8,0) |- (CS.east); % 使用外部空间绕行或根据实际需要调整
+
+% 后续流程
+\draw[arr] (CS) -- (AB);
+\draw[arr] (AB) -- (END);
+
+\end{tikzpicture}
+}
+\caption{实验评估规划总体框架}
+\label{fig:exp-framework}
+\end{figure}
+
+本章整体组织如下：第~\ref{sec:exp-framework}~节建立四层评价体系并提出实验假设；第~\ref{sec:exp-protocol}~节定义实验协议与公平性保障；第~\ref{sec:exp-env}~节说明实验环境；第~\ref{sec:exp-dataset}~节介绍数据集构建与标注方案；第~\ref{sec:exp-baseline}~节定义基线方法；第~\ref{sec:exp-metrics}~节列举全部评价指标；第~\ref{sec:exp-extraction}~至~\ref{sec:exp-efficiency}~节依次设计四个核心实验；第~\ref{sec:exp-casestudy}~节给出预期案例推演；第~\ref{sec:exp-ablation}~节规划消融实验与参数敏感性分析；第~\ref{sec:exp-discussion}~节讨论预期实验发现；第~\ref{sec:exp-threats}~节分析效度威胁。
+
+\subsection{评价体系与实验假设}
+\label{sec:exp-framework}
+
+\subsubsection{四层评价体系设计}
+
+由于\projectshort 系统包含多个串联模块，单一指标（如分类 Accuracy）无法全面评价系统质量。本文设计四层评价体系，分别覆盖系统的不同能力维度。
+
+\begin{enumerate}
+    \item \term{语义理解层（L1）}：评价系统从非结构化文本中提取结构化风险事件的能力。对应实验为事件抽取实验（第~\ref{sec:exp-extraction}~节）。
+    \item \term{知识检索层（L2）}：评价系统从时序动态图谱中检索相关事件和影响路径的能力。对应实验为图谱检索实验（第~\ref{sec:exp-retrieval}~节）。
+    \item \term{风险推理层（L3）}：评价系统的风险等级预测、幻觉抑制和可信度判断能力。对应实验为风险预测实验（第~\ref{sec:exp-prediction}~节）。
+    \item \term{工程效能层（L4）}：评价系统的响应速度、吞吐量和资源开销。对应实验为效率分析实验（第~\ref{sec:exp-efficiency}~节）。
+\end{enumerate}
+
+\subsubsection{实验假设}
+
+基于\projectshort 系统的核心技术主张，本文提出以下五个待验证的实验假设：
+
+\begin{itemize}
+    \item \term{H1（时序增强检索假设）}：时序动态图谱能够显著提升产业链风险事件的检索能力，即：
+    \begin{equation}
+    \text{Hit@K}_{\text{Temporal}} > \text{Hit@K}_{\text{Static}}, \quad \text{MRR}_{\text{Temporal}} > \text{MRR}_{\text{Static}}.
+    \end{equation}
+    该假设的直观逻辑在于：带时间状态的图谱能够过滤过期关系、优先召回有效事件，从而提高检索精度。
+
+    \item \term{H2（可信增强预测假设）}：Trust Graph 多源可信度聚合能够提升风险等级预测的准确率，即：
+    \begin{equation}
+    \text{Accuracy}_{\text{Trust}} > \text{Accuracy}_{\text{w/o Trust}}, \quad \text{F1}_{\text{Trust}} > \text{F1}_{\text{w/o Trust}}.
+    \end{equation}
+
+    \item \term{H3（图增强幻觉抑制假设）}：将结构化图谱路径作为大语言模型的输入约束，能够显著降低生成报告中的事实性幻觉。本文使用\textbf{证据对齐精度}（Evidence Alignment Precision, EAP）衡量生成内容与输入证据之间的一致性：
+    \begin{equation}
+    \text{EAP} = \frac{\text{报告中与证据一致的断言数}}{\text{报告中总断言数}}.
+    \end{equation}
+    假设形式化为：$\text{EAP}_{\text{Graph-enhanced}} > \text{EAP}_{\text{Plain LLM}}$。
+
+    \item \term{H4（效率可控假设）}：引入时序动态图谱和 Trust Graph 带来的额外计算开销在可接受范围内。定义效率可接受条件为：
+    \begin{equation}
+    \frac{\text{Latency}_{\text{TIGER}}}{\text{Latency}_{\text{Base}}} < 1.25 \quad \text{且} \quad \frac{\text{Accuracy}_{\text{TIGER}}}{\text{Accuracy}_{\text{Base}}} > 1.10.
+    \end{equation}
+
+    \item \term{H5（协同增益假设）}：时序动态图谱、Trust Graph 和图增强 LLM 三者协同工作的效果优于各组件单独增益之和，即：
+    \begin{equation}
+    \Delta_{\text{Full}} > \Delta_{\text{Temporal}} + \Delta_{\text{Trust}} + \Delta_{\text{Graph-LLM}}.
+    \end{equation}
+    该假设将通过消融实验（第~\ref{sec:exp-ablation}~节）验证。
+\end{itemize}
+
+表~\ref{tab:hypothesis-mapping}~总结了各实验与假设之间的对应关系。
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{实验-假设映射关系}
+\label{tab:hypothesis-mapping}
+\begin{tabularx}{0.95\linewidth}{c c c X}
+\toprule
+\textbf{实验} & \textbf{验证假设} & \textbf{关键指标} & \textbf{说明} \\
+\midrule
+Event Extraction & H1（支撑证据） & 字段完整率、F1 & 事件抽取质量直接影响后续检索；需先确认各系统抽取能力相当 \\
+Graph Retrieval & H1（主验证） & Hit@K、MRR、Recall@K & 比较静态图谱与动态图谱的检索能力 \\
+Risk Prediction & H2、H3 & Accuracy、EAP、F1 & 验证可信度对预测准确率的提升和图结构对幻觉的抑制 \\
+Efficiency & H4 & Latency P50/P95/P99、TPS & 验证引入动态图与可信机制的代价是否可接受 \\
+Ablation Study & H5 & 全部指标按组件移除 & 验证各组件贡献及协同效应 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{实验协议}
+\label{sec:exp-protocol}
+
+为保证实验的公平性、可重复性和统计可靠性，本章拟遵循以下实验协议。
+
+\subsubsection{公平性原则}
+
+所有对比方法将在以下维度保持严格统一：
+\begin{itemize}
+    \item \term{大语言模型}：统一使用 DeepSeek V4 Pro，Temperature = 0.1，Top-p = 0.9，Max Tokens = 4096；
+    \item \term{文本嵌入模型}：统一使用 \texttt{text-embedding-3-large}，维度 3072；
+    \item \term{随机种子}：统一设置 Python Seed = 42，NumPy Seed = 42，PyTorch Seed = 42；
+    \item \term{知识图谱存储}：Neo4j Community 5.20.0，使用同一快照的产业链种子图谱；
+    \item \term{向量数据库}：Milvus 2.4.0，索引类型 IVF\_FLAT（nlist = 128），度量方式余弦距离；
+    \item \term{测试硬件}：统一使用同一台 GPU 服务器（配置见表~\ref{tab:exp-env}）；
+    \item \term{缓存策略}：统一清空缓存后开始实验，避免缓存偏差。
+\end{itemize}
+
+\subsubsection{重复实验与统计显著性}
+
+每个实验计划重复 5 次独立运行，报告均值（Mean）和标准差（Std）。对于部分关键实验（图谱检索、风险预测），额外报告 P95 和 P99 百分位数以反映极端情况。组间差异使用双尾配对 Student's $t$-test 进行统计显著性检验，显著性水平设定为 $\alpha=0.05$。显著性标记约定：$^{\ast}$ 表示 $p < 0.05$，$^{\ast\ast}$ 表示 $p < 0.01$，$^{\ast\ast\ast}$ 表示 $p < 0.001$。
+
+\begin{align}
+t &= \frac{\bar{x}_d}{s_d / \sqrt{n}}, \\[0.3em]
+\bar{x}_d &= \frac{1}{n}\sum_{i=1}^{n}(x_{i,\text{TIGER}} - x_{i,\text{Baseline}}), \\[0.3em]
+s_d &= \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_{i,\text{TIGER}} - x_{i,\text{Baseline}} - \bar{x}_d)^2}.
+\end{align}
+
+\subsection{实验环境}
+\label{sec:exp-env}
+
+预期实验运行在以下环境中。
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{实验环境配置}
+\label{tab:exp-env}
+\begin{tabularx}{0.95\linewidth}{c X}
+\toprule
+\textbf{配置项} & \textbf{参数} \\
+\midrule
+CPU & Intel Xeon Gold 6438M $\times$ 2，共 64 核 128 线程，2.0 GHz \\
+GPU & NVIDIA A100-SXM-80GB $\times$ 1（LLM 推理）/ NVIDIA RTX 3090 24GB $\times$ 8（嵌入编码） \\
+内存 & 512 GB DDR5 4800 MHz \\
+存储 & 2 TB NVMe SSD \\
+操作系统 & Ubuntu 22.04.5 LTS \\
+Python & 3.11.9 \\
+PyTorch & 2.4.0 \\
+Neo4j & Community 5.20.0 \\
+Milvus & Standalone 2.4.0 \\
+大语言模型 & DeepSeek V4 Pro，通过 API 调用 \\
+嵌入模型 & text-embedding-3-large，3072 维 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{数据集构建}
+\label{sec:exp-dataset}
+
+\subsubsection{数据来源}
+
+实验数据拟全部来自公开来源，涵盖以下七类数据通道：
+\begin{itemize}
+    \item 全球新能源行业新闻（Electrek、CleanTechnica、Mining.com 等 RSS 订阅）；
+    \item 政府政策与制裁公告（中国商务部、USTR、European Commission、Global Trade Alert）；
+    \item 企业公告与财报（宁德时代、比亚迪、特斯拉、LG Energy Solution 等）；
+    \item 市场价格数据（LME、SMM 上海有色网、TradingEconomics）；
+    \item 航运物流信息（MarineTraffic 公开 AIS 摘要、Lloyd's List）；
+    \item 气候与灾害数据（USGS Earthquake、NOAA 极端天气）；
+    \item 社交媒体舆情（Reddit r/batteries 等）。
+\end{itemize}
+
+数据采集时间跨度计划覆盖 2024 年 1 月至 2026 年 6 月，共计 30 个月。经过去重、清洗和低相关过滤后，保留与新能源锂电池产业链相关的有效数据。
+
+\subsubsection{Ground Truth 标注}
+
+Ground Truth 拟采用\textbf{模型预标注 + 人工交叉校验}的流程：
+\begin{enumerate}
+    \item \term{第一轮}：两名团队成员分别独立对每个样本进行标注，标注内容包括事件类型、实体链接、风险等级、影响路径和有效时间窗口；
+    \item \term{一致性检查}：计算两人标注的一致率；
+    \item \term{交叉校验}：对于不一致的样本，由第三名成员进行复核，通过讨论确定最终标签。
+\end{enumerate}
+
+\subsubsection{预期数据集统计}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{预期实验数据集规模}
+\label{tab:dataset-stats}
+\begin{tabularx}{0.95\linewidth}{l X c}
+\toprule
+\textbf{统计项} & \textbf{说明} & \textbf{预期规模} \\
+\midrule
+原始数据总量 & 去重前原始新闻、公告、市场数据条目 & 约 180,000+ \\
+有效数据量 & 清洗后与锂电池产业链相关的有效条目 & 约 20,000+ \\
+标注事件量 & 经过交叉校验的风险事件 & 约 2,000+ \\
+事件类型覆盖 & 九类核心风险事件 & 9 \\
+产业链节点数 & 种子知识图谱中实体节点 & 约 500 \\
+产业链关系数 & 种子知识图谱中关系边 & 约 1,700+ \\
+训练集 & 用于 Prompt 示例选择和规则校准 & 约 60\% \\
+验证集 & 用于超参数调整（如评分权重 $\omega$） & 约 20\% \\
+测试集 & 用于最终评估 & 约 20\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{数据划分策略}
+
+数据集按事件时间顺序划分为训练集、验证集和测试集。时间顺序划分可模拟真实在线场景——系统只能使用过去的数据预测未来的风险，避免时间穿越导致指标虚高。
+
+\subsection{基线方法}
+\label{sec:exp-baseline}
+
+为全面评估\projectshort 系统的有效性，本文设计了五类基线方法。
+
+\begin{enumerate}
+    \item \term{Baseline 1：Keyword Search（关键词检索基线）}。使用 Elasticsearch 8.13 的 BM25 检索算法，基于关键词匹配召回相关新闻和事件。该基线代表传统信息检索方法在产业链风险场景中的表现。
+    \item \term{Baseline 2：Naive RAG（普通向量检索 RAG 基线）}。使用 \texttt{text-embedding-3-large} 将事件文本编码为向量，通过 Milvus 进行余弦相似度检索，将 Top-K 结果输入 LLM 生成回答。该基线代表当前主流的 RAG 问答范式。
+    \item \term{Baseline 3：Static GraphRAG（静态知识图谱 RAG 基线）}。在 Naive RAG 基础上，引入产业链知识图谱，在检索阶段同时执行文本向量检索和图谱邻域检索。该基线与本文方案的主要区别在于图谱不包含时间戳、有效期和状态信息。该基线用于验证时序增强的独立贡献。
+    \item \term{Baseline 4：TIGER-Risk w/o Trust（消融变体）}。在\projectshort 完整系统的基础上去掉 Trust Graph 模块，即使用时序动态图谱，但不进行多源可信度聚合和冲突消解。该基线用于验证 Trust Graph 的独立贡献。
+    \item \term{Baseline 5：TIGER-Risk w/o Graph（消融变体）}。在\projectshort 完整系统的基础上去掉图传播推理模块，即 LLM 直接基于 Trust Graph 聚合后的事件文本生成报告，不使用图谱路径结构。该基线用于验证图增强推理的独立贡献。
+\end{enumerate}
+
+\textbf{完整系统}为\projectshort 全部模块启用：多源数据接入、事件抽取、时序动态图谱（含时间戳、有效期和状态机）、Trust Graph（含多源可信度聚合和冲突消解）、图传播推理（含路径搜索和节点关键性计算）以及图增强 LLM 报告生成。
+
+\subsection{评价指标}
+\label{sec:exp-metrics}
+
+为全面覆盖四层评价体系，本章拟使用以下评价指标。
+
+\subsubsection{事件抽取指标（L1：语义理解）}
+
+\begin{itemize}
+    \item \term{字段完整率（Field Completeness, FC）}：抽取结果中非空字段占全部 Schema 字段的比例。
+    \item \term{事件类型准确率（Event Type Accuracy, ETA）}：预测事件类型与 Ground Truth 一致的样本比例。
+    \item \term{实体匹配 F1（Entity Matching F1, EMF1）}：预测实体集合与 Ground Truth 实体集合之间的微平均 F1 分数。
+    \item \term{时间抽取误差（Time Extraction Error, TEE）}：预测时间与 Ground Truth 时间之间的绝对天数误差。
+\end{itemize}
+
+\subsubsection{图谱检索指标（L2：知识检索）}
+
+\begin{itemize}
+    \item \term{Hit@K}：在前 K 个检索结果中至少包含一个相关事件的比例。本文计划报告 Hit@1、Hit@3、Hit@5 和 Hit@10。
+    \item \term{MRR（Mean Reciprocal Rank）}：第一个相关事件排名的倒数均值：
+    \begin{equation}
+    \text{MRR} = \frac{1}{|Q|}\sum_{i=1}^{|Q|}\frac{1}{\text{rank}_i}.
+    \end{equation}
+    \item \term{Recall@K}：前 K 个结果中召回的相关事件比例。
+    \item \term{NDCG@K（Normalized Discounted Cumulative Gain）}：考虑排序位置和相关性等级的归一化折损累计增益。
+\end{itemize}
+
+\subsubsection{风险预测指标（L3：风险推理）}
+
+\begin{itemize}
+    \item \term{风险等级 Accuracy}：四类风险等级（低/中/高/紧急）预测的总体准确率。
+    \item \term{宏平均 F1（Macro-F1）}：各类风险等级的 F1 宏平均，防止类别不平衡导致指标虚高。
+    \item \term{风险分数 MAE（Mean Absolute Error）}：预测风险分数与 Ground Truth 分数之间的平均绝对误差（分数范围 0--100）。
+    \item \term{风险分数 RMSE（Root Mean Square Error）}：预测风险分数的均方根误差。
+    \item \term{Spearman 秩相关系数 $\rho$}：预测风险排序与 Ground Truth 排序之间的秩相关性。
+    \item \term{证据对齐精度 EAP}：LLM 生成报告中与输入证据一致的断言占总断言的比例。用于量化幻觉率：
+    \begin{equation}
+    \text{Hallucination Rate} = 1 - \text{EAP}.
+    \end{equation}
+    \item \term{解释完整度（Explanation Completeness, EC）}：报告是否包含风险分数、证据来源、传播路径和应对建议的覆盖度（0--4 分制人工评分）。
+\end{itemize}
+
+\subsubsection{效率指标（L4：工程效能）}
+
+\begin{itemize}
+    \item \term{端到端延迟 P50/P95/P99}：从用户提交查询到返回完整结果的延迟百分位数（毫秒）。
+    \item \term{吞吐量 TPS（Transactions Per Second）}：系统每秒处理的查询数。
+    \item \term{峰值内存占用（Peak Memory）}：系统运行过程中的最大内存使用量（GB）。
+    \item \term{缓存命中率（Cache Hit Rate）}：事件抽取和 LLM 报告生成阶段的缓存命中比例。
+\end{itemize}
+
+\subsection{实验 1：事件抽取质量评估（规划）}
+\label{sec:exp-extraction}
+
+\subsubsection{实验目的}
+
+事件抽取是系统所有下游任务的基础。如果事件抽取质量不足，后续图谱检索和风险评分将因输入噪声而失去可比性。本实验旨在：
+\begin{enumerate}
+    \item 验证\projectshort 的事件抽取模块是否具备足够的字段完整性和实体匹配准确率；
+    \item 比较 LLM-based 抽取与规则抽取的差异，证明 LLM 方案的必要性；
+    \item 确认各对比基线在事件抽取环节能力相当，排除「检索或预测的差异来自于抽取质量不同」的替代解释。
+\end{enumerate}
+
+\subsubsection{实验设计}
+
+测试集包含标注样本，每条包含原始文本和标准事件 JSON。系统对每条原始文本执行结构化抽取，输出归一化事件对象。计划统计抽取结果与 Ground Truth 之间的字段完整率、事件类型准确率、实体匹配 F1 和时间抽取误差。对比方案包括规则抽取、LLM 零样本抽取、LLM 少样本（3-shot）抽取和\projectshort（Schema 约束）抽取。
+
+\subsubsection{预期结果与分析}
+
+预期\projectshort 的事件抽取模块在全部四项指标上优于纯规则抽取和普通 LLM Prompt 方案。原因有三：(1) Schema 约束强制模型输出结构化的合法字段，减少自由文本生成带来的字段缺失；(2) 实体别名表将不同表述映射到同一 ID，提高实体匹配率；(3) 时间归一化模块将模糊表达转换为 ISO 格式，降低时间误差。若各基线方法的抽取能力大体相当，则可排除抽取质量对下游实验的干扰。
+
+\subsection{实验 2：图谱检索能力评估（规划）}
+\label{sec:exp-retrieval}
+
+\subsubsection{实验目的}
+
+本实验是验证 \term{H1（时序增强检索假设）} 的主实验。核心问题是：引入时间戳、有效期和状态机后，动态图谱相比静态图谱能否显著提升风险事件的检索能力？
+
+\subsubsection{实验设计}
+
+测试集包含查询-事件对。每条查询模拟一个产业风险问题（如「印尼镍矿政策变化对三元电池的影响」），Ground Truth 包含该查询对应的相关事件集合。系统需从事件库中检索 Top-K 结果。对比三种检索方案：关键词 BM25、静态 GraphRAG（无时间状态）和\projectshort 时序动态图检索。所有方案使用相同的文本嵌入和向量索引配置。
+
+\subsubsection{预期结果与分析}
+
+预期\projectshort 的时序动态图谱在 Hit@K 和 MRR 上优于静态 GraphRAG。静态 GraphRAG 中可能有一定比例的事件虽然在文本语义上与查询相关，但其时间状态已过期（如已解决的罢工事件被当作当前风险召回）。\projectshort 的时间状态机和有效期机制能够将这些过期事件过滤或降级，使得第一条结果即为当前仍然有效的高相关事件。如实验结果符合预期，将有力支持 \textbf{H1}。
+
+\subsection{实验 3：风险预测与幻觉抑制评估（规划）}
+\label{sec:exp-prediction}
+
+\subsubsection{实验目的}
+
+本实验拟同时验证 \textbf{H2（可信增强预测假设）}和\textbf{H3（图增强幻觉抑制假设）}。核心问题：(1) Trust Graph 的可信度聚合能否提高风险等级预测的准确率？(2) 图增强 LLM Prompt 能否降低生成报告中的事实性幻觉？
+
+\subsubsection{实验设计}
+
+测试集包含事件，每条事件已标注 Ground Truth 风险等级和风险分数。系统需输出风险等级预测和研判报告。对比方案包括：纯 LLM 直接判断（无检索）、Naive RAG（向量检索 + LLM）、静态 GraphRAG、\projectshort w/o Trust（时序图 + LLM，无可信度聚合）和\projectshort 完整系统。对于幻觉评估，拟邀请评估员对输出报告进行断言级人工校验。
+
+\subsubsection{预期结果与分析}
+
+预期\projectshort 完整系统的风险等级 Accuracy 优于去掉 Trust Graph 的变体，Trust Graph 的贡献预计来自两个机制。第一，多源一致性加权——根据来源基础信誉度加权聚合，置信度高的事件获得更高的风险评分权重。第二，冲突识别防御——当高可信来源与低可信来源冲突时，Trust Graph 将事件标记并降低其置信度，避免系统被虚假信息误导。如实验结果符合预期，将支持 \textbf{H2}。
+
+预期\projectshort 的 EAP 高于其他基线，图增强 Prompt 中的结构化路径约束是抑制幻觉的关键——模型需引用图谱中存在的实际传播路径，而非自由编造。如实验结果符合预期，将支持 \textbf{H3}。
+
+\subsection{实验 4：效率分析（规划）}
+\label{sec:exp-efficiency}
+
+\subsubsection{实验目的}
+
+本实验验证 \textbf{H4（效率可控假设）}。核心问题是：引入时序动态图谱、Trust Graph 和图传播推理后，系统的端到端延迟和资源开销是否在可接受范围内？
+
+\subsubsection{实验设计}
+
+在测试集查询上测量从查询提交到报告返回的完整流程耗时。为模拟真实场景，查询设置为并发执行。缓存策略：首次查询冷启动，后续相同事件 ID 命中缓存。对比方案包括 Naive RAG、静态 GraphRAG 和\projectshort 完整系统。
+
+\subsubsection{预期结果与分析}
+
+预期\projectshort 完整系统的端到端延迟相比 Naive RAG 有所增加，但带来的预测质量提升使该延迟可被接受。在缓存命中场景下，延迟预期显著降低。延迟分析中，LLM 调用预计是主要瓶颈（占比超过 60\%），图谱查询与路径搜索开销预计占比较小。如实验结果符合预期，将支持 \textbf{H4}。
+
+\subsection{案例研究（规划）}
+\label{sec:exp-casestudy}
+
+为直观展示\projectshort 系统的端到端推理能力，拟以「印尼镍矿出口限制」事件为例，完整呈现系统处理流程。
+
+\subsubsection{事件背景}
+
+假设 2026 年 5 月，印度尼西亚政府宣布进一步收紧镍矿出口配额，要求所有镍矿出口企业须获得新一阶段的环保合规认证，同时将原矿出口配额削减。该政策在多家国际媒体和行业媒体中得到报道，同时社交媒体上出现对该政策执行力和实际影响的争议性讨论。
+
+\subsubsection{预期系统处理流程}
+
+\begin{enumerate}
+    \item \term{多源采集与事件抽取}：系统拟从 Reuters 和政策公告中分别采集到高可信来源报道，同时从社交媒体捕捉到低可信传闻。事件抽取模块将原始文本归一化为标准事件对象。
+    \item \term{时序动态图谱映射}：系统将事件映射到产业链节点「镍矿」，并激活下游传播路径：
+    \begin{itemize}
+        \item 镍矿 $\to$ 硫酸镍 $\to$ 三元正极材料
+        \item 三元正极材料 $\to$ 动力电池 $\to$ 新能源汽车/储能系统
+    \end{itemize}
+    \item \term{Trust Graph 可信度聚合}：系统识别到高可信来源（官方公告和主流媒体）与低可信来源（社交媒体传闻）之间的细节冲突。Trust Graph 根据来源信誉度加权，将事件置信度和生效时间依据高可信来源确定。
+    \item \term{图传播推理}：系统从「镍矿」节点出发执行 BFS 搜索，发现覆盖硫酸镍、三元正极材料、动力电池、新能源汽车和储能系统的主要传播路径。
+    \item \term{风险评分}：综合事件严重度、节点关键性、置信度、传播影响范围和时间新鲜度，计算风险分数。
+    \item \term{LLM 研判报告生成}：系统将上述结构化证据输入 LLM，生成包含风险类型、影响路径、关键节点、风险评分、证据链和应对建议的研判报告。
+\end{enumerate}
+
+\subsubsection{预期案例效果}
+
+预期该案例将展示\projectshort 从原始新闻输入到产业链风险穿透研判报告的端到端处理能力。系统不应停留在新闻摘要层面，而应完成事件结构化、可信验证、图谱映射、路径搜索、风险评估和结构化报告生成的完整推理链条。相比纯 LLM 或 Naive RAG，预期报告包含明确的证据来源、置信度标注、量化风险分数和产业链结构依据，具备可验证、可追溯、可决策的特点。
+
+\subsection{消融实验}
+\label{sec:exp-ablation}
+
+\subsubsection{实验目的}
+
+本实验验证 \textbf{H5（协同增益假设）}：\projectshort 系统的三个核心模块——时序动态图谱（Temporal Graph, TG）、Trust Graph（Trust, T）和图增强 LLM（Graph-enhanced LLM, GL）——协同工作的效果是否优于各组件单独增益之和。
+
+\subsubsection{实验设计}
+
+计划在完整系统的基础上，依次移除各模块构建消融变体：(1) w/o TG（使用静态图谱），(2) w/o T（不使用 Trust Graph 可信度聚合），(3) w/o GL（LLM 不使用图增强 Prompt），(4) w/o TG\&T，(5) w/o TG\&GL，(6) w/o T\&GL，(7) 完整系统。所有变体在测试集上重复 5 次，记录 Accuracy、Macro-F1 和 EAP 三项核心指标。
+
+\subsubsection{预期结果}
+
+预期完整系统的表现优于所有消融变体。各组件的独立贡献预计有所差异：TG 主要贡献于检索质量提升，T 主要贡献于可信度判断，GL 主要贡献于生成质量。如完整系统的总增益超过任一单一组件的独立贡献，则证明组件间存在正向协同效应，支持 \textbf{H5}。
+
+\subsubsection{参数敏感性分析}
+
+计划进一步分析风险评分权重 $\omega_1$（严重度权重）和 $\omega_2$（节点关键性权重）对预测 Accuracy 的影响。扫描范围拟设为 $\omega_1 \in [0.15, 0.55]$、$\omega_2 \in [0.10, 0.40]$，步长 0.05。预期 Accuracy 在 $\omega_1 \in [0.30, 0.40]$ 和 $\omega_2 \in [0.20, 0.30]$ 区域达到峰值，当前默认权重位于该区域内。
+
+\subsection{讨论}
+\label{sec:exp-discussion}
+
+\subsubsection{预期实验发现总结}
+
+本章规划了\projectshort 系统的实验评估方案，提出五个待验证的实验假设。通过系统化的实验设计，预期：
+\begin{itemize}
+    \item \textbf{H1}：时序动态图谱在 Hit@K 和 MRR 上优于静态图谱。
+    \item \textbf{H2}：Trust Graph 提升风险等级预测准确率，在冲突场景下提升更为显著。
+    \item \textbf{H3}：图增强 LLM Prompt 降低幻觉率，结构化路径约束抑制自由编造。
+    \item \textbf{H4}：动态图谱和 Trust Graph 的引入带来可控的效率开销，预测质量提升可接受。
+    \item \textbf{H5}：三组件协同在生成质量维度展现出协同效应。
+\end{itemize}
+
+\subsubsection{为什么预期动态图比静态图更好？}
+
+预期动态图谱优于静态图谱的三个层次原因。
+
+第一，\textbf{时间过滤}。静态图谱可能将过期事件当作当前风险召回，动态图谱通过有效期字段直接过滤过时节点。
+
+第二，\textbf{状态感知排序}。不同事件的状态（rumor vs confirmed vs active vs mitigating）影响其优先级。动态图谱的状态机允许系统在检索排序中根据事件当前状态调整优先级。
+
+第三，\textbf{演化链理解}。动态图谱维护事件状态变化的历史版本链，支持「回溯查询」和「趋势判断」两类高级检索任务。
+
+\subsubsection{为什么预期 Trust Graph 比简单平均更好？}
+
+Trust Graph 相比简单平均的两个优势：(1) 来源信誉度作为加权因子，高可信来源权重可达低可信来源的 2 倍以上；(2) 冲突标记机制可在检测到矛盾信号时主动降低整体置信度。
+
+\subsection{效度威胁分析}
+\label{sec:exp-threats}
+
+本节分析可能影响实验结论有效性的因素，按照 Cook 和 Campbell 的效度分类框架进行组织。
+
+\subsubsection{内部效度威胁}
+
+内部效度关注实验结果是否真正由自变量（系统设计差异）引起，而非混淆变量。
+
+\begin{itemize}
+    \item \term{Prompt 敏感性}：事件抽取和报告生成阶段的 Prompt 措辞变化可能影响 LLM 输出质量。为缓解该威胁，所有 Prompt 需在实验前经过多轮调试后固化。
+    \item \term{LLM 版本漂移}：DeepSeek V4 Pro 通过 API 调用，云端模型可能存在版本更新。应尽量使用同一快照版本。
+    \item \term{Embedding 模型依赖}：检索性能高度依赖嵌入模型的质量，但时序动态图谱相对于静态图谱的增益趋势应保持一致。
+    \item \term{标注偏差}：Ground Truth 中的系统性偏差可能影响评估，可采用交叉校验和多人独立标注缓解。
+\end{itemize}
+
+\subsubsection{外部效度威胁}
+
+外部效度关注结论是否可以推广到其他场景。
+
+\begin{itemize}
+    \item \term{产业链泛化性}：本文聚焦新能源锂电池产业链。该系统设计具有通用性，理论上可迁移至光伏、氢能、半导体等具有类似「上游—中游—下游」结构的产业。
+    \item \term{数据集规模限制}：标注数据量和事件类型覆盖度可能影响结论的统计效力，需在实验中持续扩充。
+    \item \term{语言与地域偏差}：数据源以英文和中文为主，对于其他地区的覆盖可能不够充分。
+\end{itemize}
+
+\subsubsection{构念效度威胁}
+
+构念效度关注评价指标是否真正度量了其声称要度量的概念。
+
+\begin{itemize}
+    \item \term{Hit@K 是否真正度量了「风险感知能力」？}需同时使用 MRR、NDCG 和 EAP 等多个指标，从不同角度覆盖「风险感知」这一构念。
+    \item \term{Accuracy 是否足以度量「风险预测质量」？}需要额外报告 MAE 和 Spearman $\rho$，并补充定性 Case Study。
+    \item \term{Hallucination Rate 的测量是否可靠？}需使用多名评估员独立标注并报告一致率。
+\end{itemize}
+
+\subsubsection{统计结论效度威胁}
+
+统计结论效度关注统计推断的合理性和可靠性。
+
+\begin{itemize}
+    \item \term{重复次数}：计划重复 5 次，使用配对设计减小变异。
+    \item \term{多重比较}：在多个指标和多个基线之间进行统计检验时，需注意第 I 类错误的累积。
+    \item \term{效应量}：除 $p$ 值外，应报告 Cohen's $d$ 效应量以评估实际显著性。
+\end{itemize}
+
+\end{document}
