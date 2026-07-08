@@ -1,2 +1,2 @@
 # ai-competition-latex
-AI竞赛论文LaTeX源码
+AI竞赛LaTeX源码
