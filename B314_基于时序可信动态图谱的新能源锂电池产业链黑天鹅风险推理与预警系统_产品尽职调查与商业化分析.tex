@@ -1,0 +1,275 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric}
+
+\geometry{left=2.8cm,right=2.8cm,top=2.6cm,bottom=2.6cm}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.35em}
+\renewcommand{\arraystretch}{1.35}
+\setlist[itemize]{leftmargin=2em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=2em,itemsep=0.2em,topsep=0.2em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small 基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\definecolor{mainblue}{RGB}{27,79,140}
+\definecolor{lightblue}{RGB}{232,242,252}
+\definecolor{lightgray}{RGB}{246,247,249}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=mainblue,
+    urlcolor=mainblue
+}
+
+\begin{document}
+
+\begin{center}
+    \vspace*{0.8cm}
+    {\zihao{1}\bfseries 产品尽职调查与商业化分析\par}
+    \vspace{0.8cm}
+    {\zihao{3}\bfseries 基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统\par}
+    \vspace{0.5cm}
+    {\zihao{-4} 面向新能源锂电池产业链风险监测场景的产品定位、市场价值与商业化路径\par}
+\end{center}
+
+\vspace{0.6cm}
+
+\section{产品定位}
+
+本项目定位为“新能源锂电池产业链风险智能监测与研判平台”。产品面向新能源电池企业、整车企业、储能企业、金融研究机构、政府监管部门、产业园区和供应链服务企业，提供外部风险信息监测、产业链影响路径分析、风险评分、证据链核验、Dashboard 态势展示和 AI 研判报告生成能力。
+
+本项目不是普通新闻聚合工具，也不是通用聊天机器人。普通新闻聚合只能回答“发生了什么”，但难以判断事件是否可信、是否仍然有效、会影响哪些产业链节点；通用聊天机器人可以生成解释性文字，但缺少稳定的行业结构、证据约束和风险量化机制。本项目的核心价值是将分散的公开信息转化为结构化、可信、可解释、可追踪、可展示、可生成报告的产业链风险情报。
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.65cm,
+    module/.style={rectangle, rounded corners=3pt, draw=mainblue, fill=lightblue, align=center, minimum width=10.6cm, minimum height=0.75cm, font=\small},
+    arrow/.style={-{Latex[length=2.2mm]}, thick, draw=mainblue}
+]
+\node[module] (a) {多源公开信息：新闻、政策、矿业动态、航运物流、市场代理指标};
+\node[module, below=of a] (b) {结构化风险事件：类型、时间、地点、实体、证据、影响节点};
+\node[module, below=of b] (c) {产业链图谱推理：资源、材料、企业、物流通道、上下游传播路径};
+\node[module, below=of c] (d) {可信度与风险评分：来源可信、多源一致、传播范围、节点关键性};
+\node[module, below=of d] (e) {Dashboard 与 AI 报告：风险态势、证据链、研判建议、决策支持};
+\draw[arrow] (a) -- (b);
+\draw[arrow] (b) -- (c);
+\draw[arrow] (c) -- (d);
+\draw[arrow] (d) -- (e);
+\end{tikzpicture}
+\end{center}
+
+\section{目标用户与决策场景}
+
+系统目标用户覆盖产业链企业、金融机构和监管部门。不同用户的关注点不同，但共同需求是将分散外部风险转化为可理解、可验证、可行动的风险情报。
+
+\begin{longtable}{p{3.0cm}p{4.6cm}p{6.0cm}}
+\caption{目标用户与核心决策场景}\label{tab:users}\\
+\toprule
+目标用户 & 核心关注点 & 典型使用场景 \\
+\midrule
+\endfirsthead
+\toprule
+目标用户 & 核心关注点 & 典型使用场景 \\
+\midrule
+\endhead
+新能源电池企业 & 锂、镍、钴、石墨等上游材料供应风险和价格波动 & 采购计划调整、替代供应评估、关键资源国政策监测 \\
+新能源汽车企业 & 电池成本、核心供应商稳定性和交付周期 & 生产排期风险评估、供应商风险预警、车型交付影响判断 \\
+储能企业 & 电芯、电池包和储能系统交付稳定性 & 储能项目成本测算、交付风险监控、合同履约风险评估 \\
+金融机构与研究机构 & 产业链风险对估值、商品价格和行业景气度的影响 & 产业研究、投资风险分析、专题报告生成 \\
+政府、园区与监管部门 & 关键资源安全、产业链韧性和区域产业风险 & 产业安全监测、重点企业风险跟踪、突发事件预警 \\
+供应链服务企业 & 运输、库存、采购和供应商风险 & 物流风险监测、供应链异常预警、客户风险报告服务 \\
+\bottomrule
+\end{longtable}
+
+\section{用户痛点分析}
+
+新能源锂电池产业链风险管理存在明显的信息分散、结构复杂和可信度不足问题。当前用户在实际决策中主要面临五类痛点。
+
+\begin{table}[htbp]
+\centering
+\caption{用户痛点与产品响应}
+\begin{tabularx}{\textwidth}{p{3.0cm}p{5.2cm}X}
+\toprule
+痛点类别 & 具体表现 & 产品响应 \\
+\midrule
+信息分散 & 政策公告、行业新闻、矿业动态、航运物流和市场价格分布在不同平台。 & 通过多源接入和来源注册表统一管理外部风险信息。 \\
+传播不透明 & 单一事件可能沿上游资源、中游材料、电芯、电池包和整车多级传导。 & 通过产业链知识图谱输出传播路径和影响节点。 \\
+可信度难判断 & 开放信息中存在重复、低可信、时间滞后和冲突描述。 & 通过来源信誉、多源一致性、证据一致性和实体匹配计算置信度。 \\
+状态难追踪 & 事件可能经历传闻、确认、升级、缓解、终止或证伪。 & 通过时序事件状态和 Dashboard 状态统计展示事件演化。 \\
+决策转化不足 & 企业需要知道影响谁、风险多大、证据是什么、是否需要行动。 & 通过风险评分、证据链报告和应对建议支持决策。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{产品解决方案}
+
+本项目围绕产业链风险闭环构建解决方案，完整流程为：多源信息采集、风险事件结构化、产业链图谱映射、可信度评估、传播路径推理、风险评分、Dashboard 态势展示和 AI 研判报告生成。
+
+在信息采集环节，系统接入公开新闻、行业媒体、政策信息、市场代理指标和演示案例，并通过来源注册表管理来源可靠性、覆盖标签和启用状态。在结构化环节，系统将新闻和公告转化为统一风险事件对象。在图谱映射环节，系统识别事件涉及的国家、资源、材料、企业、物流通道和产业环节。在可信度评估环节，系统计算事件置信度并区分 confirmed、watchlist、unverified 和 conflicting 等状态。在传播推理环节，系统输出上下游影响路径。在风险评分环节，系统输出 0--100 风险分数和风险等级。在 Dashboard 展示环节，系统通过全球地图、传播弧线、事件列表、市场指标和数据缺口呈现风险态势。在报告生成环节，系统生成中文研判报告，辅助用户形成决策建议。
+
+\section{产品模块架构}
+
+产品可分为六个核心模块。各模块从风险发现到决策建议构成完整闭环。
+
+\begin{longtable}{p{3.2cm}p{6.4cm}p{4.0cm}}
+\caption{产品模块架构}\label{tab:modules}\\
+\toprule
+模块名称 & 主要能力 & 用户价值 \\
+\midrule
+\endfirsthead
+\toprule
+模块名称 & 主要能力 & 用户价值 \\
+\midrule
+\endhead
+风险信息接入模块 & 管理公开来源、演示数据和可扩展 API，形成风险信息输入。 & 降低人工检索成本。 \\
+事件结构化与证据管理模块 & 抽取事件字段、整理证据、维护事件状态和生命周期。 & 将新闻转化为可计算对象。 \\
+产业链图谱与传播推理模块 & 维护国家、材料、企业、物流和产业环节关系，输出传播路径。 & 解释事件影响链路。 \\
+可信度与风险评分模块 & 计算事件置信度、识别冲突、输出风险分数和风险等级。 & 降低误报和主观判断风险。 \\
+AI 研判报告模块 & 将结构化事件、路径、评分和证据链转化为中文研判报告。 & 提高研判和汇报效率。 \\
+风险态势 Dashboard 模块 & 展示全球点位、传播弧线、事件列表、状态统计、市场指标和数据缺口。 & 支撑风险值班和跨部门协同。 \\
+\bottomrule
+\end{longtable}
+
+\section{核心竞争优势}
+
+与普通新闻聚合、通用大模型问答、传统舆情监测和单一数据看板相比，本项目具有以下竞争优势。
+
+\begin{table}[htbp]
+\centering
+\caption{核心竞争优势}
+\begin{tabularx}{\textwidth}{p{3.2cm}X}
+\toprule
+优势方向 & 具体说明 \\
+\midrule
+产业链结构理解 & 系统通过知识图谱理解锂、镍、钴、石墨、正极材料、电芯、电池包、整车和储能之间的上下游关系。 \\
+可信度判断能力 & 系统根据来源、证据、多源一致性和实体匹配程度评估置信度，并识别冲突信息。 \\
+传播路径解释能力 & 系统能够说明风险从哪里产生、经过哪些节点、可能影响哪些企业或产业环节。 \\
+可解释风险评分 & 系统将风险分数拆解为事件严重度、节点关键性、来源置信度、传播范围和时间新鲜度。 \\
+Dashboard 态势展示 & 系统将地图、事件列表、传播弧线、市场指标、数据缺口和报告放在同一界面，适合风险值班和汇报展示。 \\
+证据链约束生成 & 大语言模型在结构化事件、图谱路径和评分结果约束下生成报告，降低无依据生成风险。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{与已有产品形态对比}
+
+\begin{longtable}{p{3.0cm}p{3.2cm}p{3.8cm}p{3.8cm}}
+\caption{产品形态对比}\label{tab:comparison}\\
+\toprule
+产品形态 & 典型能力 & 主要不足 & 本项目改进 \\
+\midrule
+\endfirsthead
+\toprule
+产品形态 & 典型能力 & 主要不足 & 本项目改进 \\
+\midrule
+\endhead
+新闻聚合平台 & 聚合新闻标题、摘要和链接 & 难判断可信度和产业链影响路径 & 引入结构化事件、可信度评估和图谱传播推理 \\
+通用大模型问答 & 生成自然语言解释 & 缺少稳定行业结构和证据约束 & 引入产业链图谱与证据链约束生成 \\
+舆情监测系统 & 关键词监控和热度分析 & 难转化为供应链风险判断 & 引入风险评分和上下游影响路径 \\
+传统供应链风控系统 & 指标阈值预警和供应商管理 & 对开放新闻和黑天鹅事件适应弱 & 引入多源事件抽取与可信验证 \\
+单一 BI 看板 & 展示指标图表 & 缺少事件推理和研判报告 & 引入 AI 报告、路径解释和数据质量提示 \\
+\bottomrule
+\end{longtable}
+
+\section{商业模式设计}
+
+本项目可形成多种商业化模式，既可以面向中小企业提供在线订阅，也可以面向大型企业和监管部门提供私有化部署。
+
+\begin{longtable}{p{3.0cm}p{6.4cm}p{4.0cm}}
+\caption{商业模式设计}\label{tab:business}\\
+\toprule
+商业模式 & 服务内容 & 适用客户 \\
+\midrule
+\endfirsthead
+\toprule
+商业模式 & 服务内容 & 适用客户 \\
+\midrule
+\endhead
+SaaS 订阅 & 提供实时风险看板、全球风险态势 Dashboard、风险事件库、产业链图谱、AI 研判报告、预警通知和 API 调用额度。 & 中小型电池企业、整车企业、金融机构和产业园区 \\
+私有化部署 & 接入企业内部供应商、采购、库存、订单和运输数据，形成企业专属供应链风险管理系统。 & 大型电池企业、整车企业和供应链集团 \\
+API 服务 & 提供风险事件、风险评分、证据链、地图点位、传播路径、数据质量和研判报告接口。 & ERP、SRM、金融研究平台和行业数据平台 \\
+行业报告服务 & 输出新能源锂电池产业链周报、月报、专题报告和突发事件研判报告。 & 金融机构、咨询机构、产业园区和企业战略部门 \\
+监管与园区驾驶舱 & 建设区域产业链风险监测大屏，用于产业安全评估、重点企业监测和突发风险预警。 & 政府部门、产业园区和行业联盟 \\
+\bottomrule
+\end{longtable}
+
+\section{市场机会与落地路径}
+
+新能源锂电池产业链具有高度全球化、强政策敏感性和强资源约束特征。随着新能源汽车和储能市场扩张，企业对关键材料、供应国政策、跨境运输和供应商稳定性的监测需求持续增强。传统人工监测和静态咨询报告难以满足高频、跨源、可解释的风险研判需求。
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    stage/.style={rectangle, rounded corners=3pt, draw=mainblue, fill=lightblue, align=center, minimum width=3.2cm, minimum height=1.0cm, font=\small},
+    arrow/.style={-{Latex[length=2.2mm]}, thick, draw=mainblue}
+]
+\node[stage] (s1) {阶段一\比赛原型\验证技术闭环};
+\node[stage, right=of s1] (s2) {阶段二\行业试点\扩展数据与图谱};
+\node[stage, right=of s2] (s3) {阶段三\企业应用\接入内部数据};
+\node[stage, right=of s3] (s4) {阶段四\平台化\SaaS 与 API 服务};
+\draw[arrow] (s1) -- (s2);
+\draw[arrow] (s2) -- (s3);
+\draw[arrow] (s3) -- (s4);
+\end{tikzpicture}
+\end{center}
+
+第一阶段是比赛原型阶段，重点完成典型风险事件、基础知识图谱、风险评分和 Dashboard 演示。第二阶段是行业试点阶段，扩展更多数据源、企业节点、矿山节点、供应商关系和历史风险事件。第三阶段是企业应用阶段，接入内部供应商、采购、库存和订单数据。第四阶段是平台化阶段，形成 SaaS 平台、API 服务和行业报告服务，并向光伏、半导体、稀土、医药等其他高依赖供应链行业扩展。
+
+\section{预期效益}
+
+\begin{table}[htbp]
+\centering
+\caption{预期效益}
+\begin{tabularx}{\textwidth}{p{3.0cm}X}
+\toprule
+受益对象 & 预期效益 \\
+\midrule
+企业用户 & 提升外部风险识别及时性，减少人工检索和滞后报告依赖；通过图谱路径和评分模型提升风险解释能力；辅助采购、供应链和管理层提前调整供应策略。 \\
+金融机构 & 将分散新闻转化为事件级风险情报，辅助判断产业链风险对企业估值、商品价格和行业景气度的影响。 \\
+政府与园区 & 提供可视化、数据化的产业链安全监测工具，支撑重点资源、重点企业和重点区域风险识别。 \\
+项目团队 & 通过 Dashboard 将事件、地图、路径、证据、市场指标和报告放在同一工作台，提升演示效果和产品完整度。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{商业化风险与应对措施}
+
+\begin{longtable}{p{3.2cm}p{5.0cm}p{5.0cm}}
+\caption{商业化风险与应对措施}\label{tab:risk}\\
+\toprule
+风险类型 & 风险说明 & 应对措施 \\
+\midrule
+\endfirsthead
+\toprule
+风险类型 & 风险说明 & 应对措施 \\
+\midrule
+\endhead
+数据源稳定性风险 & 公开数据源可能访问失败、格式变化或质量不稳定。 & 建立来源状态监控、缓存机制、fallback 数据和数据缺口提示。 \\
+行业知识覆盖不足 & 初版图谱难以覆盖全部矿山、企业、供应商和贸易关系。 & 从种子图谱逐步扩展，并引入行业专家校验。 \\
+风险评分可信度风险 & 原型阶段权重来自专家规则初始化，仍需校准。 & 建立历史案例回测集，记录误报、漏报和人工评分差异。 \\
+客户集成成本风险 & 企业 ERP、SRM、采购、库存和订单系统结构差异较大。 & 优先提供标准 API 和私有化部署方案，再逐步定制集成。 \\
+大模型生成可靠性风险 & 大模型可能产生无依据表达。 & 采用证据链约束生成，并保留 fallback 模板报告。 \\
+\bottomrule
+\end{longtable}
+
+\section{结论}
+
+本项目具有明确的行业痛点、清晰的产品定位和可扩展的商业模式。其核心价值不在于简单聚合新闻，也不在于让大模型自由回答问题，而在于把多源信息、产业链知识图谱、可信度评估、图谱传播推理、可解释评分、Dashboard 态势展示和 AI 研判报告组合为一个完整的产业链风险智能系统。
+
+从商业化角度看，项目既可以作为 SaaS 风险监测平台，也可以作为大型企业私有化供应链风险系统，还可以通过 API 和行业报告方式服务金融研究、产业园区和监管场景。随着新能源产业链风险管理需求提升，该项目具备继续产品化和行业落地的潜力。
+
+\end{document}

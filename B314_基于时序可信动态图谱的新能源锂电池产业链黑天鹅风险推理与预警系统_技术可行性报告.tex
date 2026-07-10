@@ -1,0 +1,416 @@
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric}
+
+\geometry{left=2.8cm,right=2.8cm,top=2.6cm,bottom=2.6cm}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.35em}
+\renewcommand{\arraystretch}{1.35}
+\setlist[itemize]{leftmargin=2em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=2em,itemsep=0.2em,topsep=0.2em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small 基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\definecolor{mainblue}{RGB}{27,79,140}
+\definecolor{lightblue}{RGB}{232,242,252}
+\definecolor{lightgray}{RGB}{246,247,249}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=mainblue,
+    urlcolor=mainblue
+}
+
+\begin{document}
+
+\begin{center}
+    \vspace*{0.8cm}
+    {\zihao{1}\bfseries 技术可行性报告\par}
+    \vspace{0.8cm}
+    {\zihao{3}\bfseries 基于时序可信动态图谱的新能源锂电池产业链黑天鹅风险推理与预警系统\par}
+    \vspace{0.5cm}
+    {\zihao{-4} 面向新能源锂电池产业链风险研判场景的技术路线、系统架构与验证方案\par}
+\end{center}
+
+\vspace{0.6cm}
+
+\section{报告定位}
+
+本报告用于说明本项目的技术可行性、核心方法、工程实现基础和验证路径。项目面向新能源锂电池产业链中的政策变化、制裁风险、矿区罢工、航运中断、价格异常、极端天气和地缘冲突等风险场景，构建具备行业结构感知、时间演化感知、可信证据判断、图谱传播推理和智能报告生成能力的垂直风险研判系统。
+
+本项目的技术路线不是让大语言模型直接阅读新闻并主观给出风险等级，而是先将多源信息转化为结构化事件，再将事件映射到新能源锂电池产业链知识图谱，通过可信度计算、冲突识别、图谱路径搜索和可解释风险评分形成结构化研判结果，最后由大语言模型在证据链约束下生成中文报告。Dashboard 作为推理结果的可视化承载层，用于展示全球风险点位、传播弧线、事件状态、市场代理指标、数据缺口和 AI 研判报告。
+
+\section{总体技术路线}
+
+系统采用“结构化事件驱动的时序可信动态图谱推理”路线。其核心思想是将非结构化风险信息转化为可计算事件对象，并通过产业链图谱和可信度规则约束后续推理过程。整体流程如下：
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.75cm,
+    module/.style={rectangle, rounded corners=3pt, draw=mainblue, fill=lightblue, align=center, minimum width=10.8cm, minimum height=0.8cm, font=\small},
+    arrow/.style={-{Latex[length=2.2mm]}, thick, draw=mainblue}
+]
+\node[module] (a) {多源信息输入：新闻、政策公告、行业媒体、市场代理指标、演示案例};
+\node[module, below=of a] (b) {风险事件结构化：事件类型、时间、地点、实体、材料、证据、严重度};
+\node[module, below=of b] (c) {产业链知识图谱映射：国家、资源、材料、企业、物流通道、产业环节};
+\node[module, below=of c] (d) {时序可信动态图谱推理：时间状态、置信度、冲突识别、路径搜索};
+\node[module, below=of d] (e) {风险传播与评分：事件严重度、节点关键性、来源置信度、传播范围、时效性};
+\node[module, below=of e] (f) {Dashboard 态势展示：地图点位、传播弧线、事件状态、市场指标、数据缺口};
+\node[module, below=of f] (g) {AI 研判报告生成：基于结构化事件、图谱路径、风险评分和证据链生成报告};
+\draw[arrow] (a) -- (b);
+\draw[arrow] (b) -- (c);
+\draw[arrow] (c) -- (d);
+\draw[arrow] (d) -- (e);
+\draw[arrow] (e) -- (f);
+\draw[arrow] (f) -- (g);
+\end{tikzpicture}
+\end{center}
+
+该架构的关键特点在于：风险判断并不由单一模型黑箱完成，而是由结构化事件、知识图谱、可信度规则、图谱传播路径和评分模型共同支撑。大语言模型主要承担复杂文本理解、报告组织和建议生成任务，其输入受到结构化数据和证据链约束，从而降低无依据生成风险。
+
+\section{系统模块架构}
+
+系统由七个核心模块构成，各模块之间通过标准化事件对象和 Dashboard 数据接口连接。模块职责如下表所示。
+
+\begin{longtable}{p{1.2cm}p{3.0cm}p{6.2cm}p{3.2cm}}
+\caption{系统模块架构}\label{tab:architecture}\\
+\toprule
+层级 & 模块名称 & 核心功能 & 输出结果 \\
+\midrule
+\endfirsthead
+\toprule
+层级 & 模块名称 & 核心功能 & 输出结果 \\
+\midrule
+\endhead
+1 & 多源信息输入层 & 接入公开新闻、政策公告、行业媒体、市场代理指标和演示案例数据，并记录来源类型、覆盖领域和可信度权重。 & 原始风险信息与来源清单 \\
+2 & 风险事件结构化层 & 抽取事件类型、时间、地点、实体、材料、证据和严重度，形成标准风险事件对象。 & 结构化风险事件 \\
+3 & 产业链知识图谱层 & 维护国家、资源、材料、企业、物流通道和产业环节之间的供应、依赖、加工、运输和影响关系。 & 产业链图谱节点与边 \\
+4 & 时序可信动态图谱推理层 & 为事件引入时间状态、生命周期、置信度、冲突识别和图谱挂接关系。 & 带时间与证据状态的事件节点 \\
+5 & 风险传播与评分层 & 基于图谱路径计算传播范围，结合严重度、节点关键性、来源置信度和时间新鲜度生成风险分数。 & 风险等级、传播路径与评分解释 \\
+6 & Dashboard 态势展示层 & 展示全球风险点位、2D/3D 地图、传播弧线、事件状态、市场指标和数据缺口。 & 可交互风险态势界面 \\
+7 & AI 研判报告生成层 & 将结构化事件、风险评分、传播路径和证据链输入大语言模型，生成中文研判报告。 & 风险研判报告与应对建议 \\
+\bottomrule
+\end{longtable}
+
+\section{核心数据对象设计}
+
+\subsection{风险事件对象}
+
+风险事件对象是系统推理的基本单元。系统将新闻、公告和演示案例统一转化为标准化事件对象，使后续可信度计算、实体映射、图谱推理和报告生成具有统一输入。
+
+\begin{table}[htbp]
+\centering
+\caption{风险事件对象字段设计}
+\begin{tabularx}{\textwidth}{p{2.2cm}p{5.0cm}X}
+\toprule
+字段类别 & 代表字段 & 技术作用 \\
+\midrule
+事实字段 & event\_name、event\_type、published\_at、location & 描述事件基本事实，回答“发生了什么、何时发生、在哪里发生”。 \\
+产业链字段 & materials、affected\_nodes、matched\_nodes & 将事件与材料、企业、国家和产业环节连接。 \\
+证据字段 & source、evidence、confidence & 支撑可信度计算、证据引用和报告追溯。 \\
+时序字段 & event\_time、valid\_from、valid\_to、lifecycle & 判断事件是否仍然有效，以及风险是否升级、缓解或失效。 \\
+风险字段 & severity、risk\_score、risk\_level & 支撑风险排序、等级划分和预警展示。 \\
+解释字段 & propagation\_paths、explanation & 支撑传播路径解释、Dashboard 展示和人工复核。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+该设计使系统能够回答六类问题：事件是什么、来自哪里、是否可信、影响什么、如何传播、风险多高。相比普通新闻摘要，事件对象具有可计算性、可追溯性和可展示性。
+
+\subsection{产业链图谱对象}
+
+产业链图谱由节点和边组成。节点表示国家、资源、材料、企业、物流通道、产业环节和需求场景；边表示供应、依赖、加工、运输、影响和替代关系。
+
+\begin{table}[htbp]
+\centering
+\caption{图谱节点与边设计}
+\begin{tabularx}{\textwidth}{p{2.6cm}p{4.6cm}X}
+\toprule
+图谱元素 & 示例 & 作用 \\
+\midrule
+资源国节点 & 智利、澳大利亚、阿根廷、印尼、刚果金 & 表示关键矿产资源来源。 \\
+材料节点 & 锂、碳酸锂、氢氧化锂、镍、钴、石墨 & 表示上游和中游材料。 \\
+产业环节节点 & 正极材料、电芯、电池包、整车、储能 & 表示上下游传导结构。 \\
+企业节点 & 电池企业、整车企业、材料企业 & 表示潜在受影响主体。 \\
+物流节点 & 红海、苏伊士运河、马六甲海峡 & 表示跨境运输风险通道。 \\
+关系边 & supplies、depends\_on、processes、transports & 表示传播方向和依赖关系。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+图谱设计的关键不是节点数量越多越好，而是要覆盖风险传播所需的最小可用产业链结构。初赛阶段的种子图谱可支撑典型案例演示，后续可继续扩展企业、矿山、供应商和贸易关系。
+
+\section{关键方法设计}
+
+\subsection{事件结构化抽取与校验}
+
+系统采用“规则抽取 + schema 校验 + 大模型增强”的混合式结构化方法。规则抽取负责识别高频风险类型、材料词、国家词、企业词和物流词；schema 校验负责检查字段完整性和合法性；大模型增强用于复杂文本理解、摘要归纳和报告生成。
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.55cm,
+    step/.style={rectangle, draw=mainblue, fill=lightgray, align=center, minimum width=3.0cm, minimum height=0.8cm, font=\small},
+    arrow/.style={-{Latex[length=2mm]}, thick, draw=mainblue}
+]
+\node[step] (s1) {原始文本};
+\node[step, right=of s1] (s2) {候选实体识别};
+\node[step, right=of s2] (s3) {事件类型识别};
+\node[step, below=of s3] (s4) {字段补全};
+\node[step, left=of s4] (s5) {schema 校验};
+\node[step, left=of s5] (s6) {图谱节点映射};
+\node[step, below=of s6, minimum width=9.8cm] (s7) {标准风险事件对象};
+\draw[arrow] (s1) -- (s2);
+\draw[arrow] (s2) -- (s3);
+\draw[arrow] (s3) -- (s4);
+\draw[arrow] (s4) -- (s5);
+\draw[arrow] (s5) -- (s6);
+\draw[arrow] (s6) -- (s7);
+\end{tikzpicture}
+\end{center}
+
+该方法的技术亮点在于，系统没有把大模型作为唯一抽取器，而是用 schema 和规则形成约束，使输出结果更稳定、更容易调试，也更适合后续工程化扩展。
+
+\subsection{实体链接与图谱挂接}
+
+事件进入系统后，需要解决文本中的实体如何挂接到产业链图谱的问题。系统采用四级实体链接策略。
+
+\begin{table}[htbp]
+\centering
+\caption{实体链接策略}
+\begin{tabularx}{\textwidth}{p{1.8cm}p{3.0cm}p{4.0cm}X}
+\toprule
+层级 & 方法 & 示例 & 适用场景 \\
+\midrule
+一级 & 精确别名匹配 & Red Sea $\rightarrow$ 红海物流通道 & 文本中明确出现实体名称。 \\
+二级 & 材料词匹配 & nickel $\rightarrow$ 镍 & 文本中明确出现材料名称。 \\
+三级 & 上下文补全 & cathode $\rightarrow$ 正极材料 & 文本中出现行业上下文但缺少标准节点名。 \\
+四级 & 图谱回退推断 & lithium $\rightarrow$ 智利、澳大利亚等资源节点 & 文本缺少精确位置时的可解释推断。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+该策略能够在信息不完整的新闻环境中保持图谱挂接能力，同时保留推断来源说明，避免将推断点位误认为精确事实。
+
+\subsection{可信度评估与冲突识别}
+
+可信度评估是本项目区别于普通新闻摘要的关键模块。系统将事件置信度定义为来源信誉度、多源一致性、证据一致性和实体匹配程度的加权组合：
+
+\[
+\text{事件置信度}
+= \text{来源信誉度}\times 0.40
++ \text{多源一致性}\times 0.25
++ \text{证据一致性}\times 0.25
++ \text{实体匹配程度}\times 0.10
+\]
+
+其中，来源信誉度用于衡量信息入口质量；多源一致性用于判断同一事件是否被多个独立来源支持；证据一致性用于判断不同来源在时间、地点、主体和影响范围上是否相互印证；实体匹配程度用于判断事件是否准确落到产业链图谱节点上。
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    state/.style={rectangle, rounded corners=3pt, draw=mainblue, fill=lightblue, align=center, minimum width=3.0cm, minimum height=0.75cm, font=\small},
+    arrow/.style={-{Latex[length=2mm]}, thick, draw=mainblue}
+]
+\node[state] (a) {单源输入\nunverified};
+\node[state, right=of a] (b) {高可信单源\nwatchlist};
+\node[state, right=of b] (c) {多源一致\nconfirmed};
+\node[state, below=of b] (d) {多源冲突\nconflicting};
+\node[state, below=of c] (e) {证伪或结束\ninvalidated / resolved};
+\draw[arrow] (a) -- (b);
+\draw[arrow] (b) -- (c);
+\draw[arrow] (a) -- (d);
+\draw[arrow] (b) -- (d);
+\draw[arrow] (c) -- (e);
+\draw[arrow] (d) -- (e);
+\end{tikzpicture}
+\end{center}
+
+该权重属于原型阶段的专家规则初始化，并不声称是唯一最优值。其设计依据来自新闻学中的信源可信度、社会科学中的多源三角互证、知识图谱中的实体链接准确性和风险管理中的证据链核验思想。后续可通过历史案例回测、专家标注和参数搜索进一步校准。
+
+\subsection{图谱传播路径推理}
+
+风险传播推理解决的问题是：一个风险事件不只影响新闻中直接出现的实体，还会沿产业链上下游传导。系统采用基于图搜索的路径推理方法。
+
+推理过程包括四个步骤：第一，确定风险源节点，例如“印尼 + 镍”“智利 + 锂”“红海 + 物流通道”；第二，根据供应、加工、运输和依赖关系确定候选影响节点；第三，限制传播深度，避免路径无限扩散；第四，根据节点关键性、路径长度、事件类型匹配度和证据置信度对路径排序。
+
+\begin{table}[htbp]
+\centering
+\caption{传播推理示例}
+\begin{tabularx}{\textwidth}{p{2.6cm}p{3.0cm}X}
+\toprule
+事件类型 & 风险源节点 & 传播路径示例 \\
+\midrule
+矿区罢工 & 智利 / 锂 & 锂资源 $\rightarrow$ 碳酸锂 $\rightarrow$ 正极材料 $\rightarrow$ 电芯 $\rightarrow$ 电池包 \\
+出口管制 & 印尼 / 镍 & 镍资源 $\rightarrow$ 硫酸镍 $\rightarrow$ 三元正极材料 $\rightarrow$ 电芯 \\
+航运中断 & 红海物流通道 & 红海 $\rightarrow$ 欧洲运输 $\rightarrow$ 电池材料交付 $\rightarrow$ 整车生产 \\
+环保监管 & 石墨 / 负极材料 & 石墨 $\rightarrow$ 负极材料 $\rightarrow$ 电芯 $\rightarrow$ 储能系统 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+该方法将风险研判从文本相似性提升到产业链结构推理。大语言模型生成报告时使用这些路径作为结构化输入，因此报告能够解释影响链路，而不是泛泛描述风险。
+
+\subsection{可解释风险评分模型}
+
+风险评分用于回答事件风险强度。系统采用可解释加权模型：
+
+\[
+\begin{aligned}
+\text{Risk Score}={}&\text{事件严重度}\times 0.35
++\text{节点关键性}\times 0.25 \\
+&+\text{来源置信度}\times 0.20
++\text{传播影响范围}\times 0.15
++\text{时间新鲜度}\times 0.05
+\end{aligned}
+\]
+
+\begin{table}[htbp]
+\centering
+\caption{风险评分因子解释}
+\begin{tabularx}{\textwidth}{p{2.8cm}p{1.4cm}p{4.1cm}X}
+\toprule
+因子 & 权重 & 技术含义 & 设计理由 \\
+\midrule
+事件严重度 & 0.35 & 衡量事件本身冲击强度。 & 风险大小首先取决于事件本身。 \\
+节点关键性 & 0.25 & 衡量受影响节点在产业链中的结构地位。 & 关键节点受冲击会放大影响。 \\
+来源置信度 & 0.20 & 衡量证据可靠性。 & 防止低可信消息触发误报。 \\
+传播影响范围 & 0.15 & 衡量风险沿上下游扩散的可能性。 & 跨多环节事件更值得关注。 \\
+时间新鲜度 & 0.05 & 衡量事件近期性。 & 保留时效性，但避免过度放大近期新闻。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+风险等级划分为 0--30 低风险、31--60 中风险、61--80 高风险、81--100 紧急风险。该评分模型的优势是每个分数都能解释来源，适合答辩、专家复核和后续调参。
+
+\subsection{证据链约束的大语言模型报告生成}
+
+系统不把大语言模型作为最终裁判，而是将其作为受控报告生成器。输入给模型的内容包括结构化事件、风险评分、置信度状态、传播路径、证据来源和数据缺口。模型生成报告时必须围绕这些输入展开。
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.55cm,
+    step/.style={rectangle, draw=mainblue, fill=lightgray, align=center, minimum width=2.8cm, minimum height=0.8cm, font=\small},
+    arrow/.style={-{Latex[length=2mm]}, thick, draw=mainblue}
+]
+\node[step] (a) {结构化事件};
+\node[step, right=of a] (b) {风险评分};
+\node[step, right=of b] (c) {传播路径};
+\node[step, below=of c] (d) {证据来源};
+\node[step, left=of d] (e) {Prompt 组装};
+\node[step, left=of e] (f) {LLM 报告};
+\node[step, below=of f, minimum width=8.5cm] (g) {fallback 校验与报告展示};
+\draw[arrow] (a) -- (b);
+\draw[arrow] (b) -- (c);
+\draw[arrow] (c) -- (d);
+\draw[arrow] (d) -- (e);
+\draw[arrow] (e) -- (f);
+\draw[arrow] (f) -- (g);
+\end{tikzpicture}
+\end{center}
+
+这种设计有三个优点：第一，降低幻觉风险，因为模型不能脱离结构化证据自由发挥；第二，增强报告一致性，因为同类事件输入结构相同；第三，便于追溯，因为报告结论可以回到事件、路径和评分字段。
+
+\section{Dashboard 数据适配与可解释展示}
+
+Dashboard 是本项目的关键展示层，但它不是简单页面包装，而是后端推理结果的统一展示协议。后端通过 \texttt{/api/lithium/dashboard} 输出 summary、events、top\_events、map、markets、report、llm、registry 和 data\_quality 等字段。
+
+\begin{table}[htbp]
+\centering
+\caption{Dashboard 数据接口结构}
+\begin{tabularx}{\textwidth}{p{2.5cm}p{5.6cm}X}
+\toprule
+数据块 & 内容 & 前端用途 \\
+\midrule
+summary & 事件总数、最高风险、状态统计 & 左侧风险态势栏 \\
+events & 结构化事件列表、重点风险事件 & 重点风险事件面板 \\
+map & points、arcs、legend & 2D/3D 地图和传播弧线 \\
+markets & ETF、锂矿企业、VIX、能源价格等 & 市场代理指标面板 \\
+report & cached report、LLM report、fallback report & AI 研判报告面板 \\
+data\_quality & data gaps、fallback 状态、来源状态 & 数据缺口提示 \\
+llm & 模型提供方和模型状态 & 展示模型调用状态 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Dashboard 的技术价值体现在三点：地图点位让用户看到风险发生或映射的位置；传播弧线让用户看到风险如何从源头传导到目标节点；数据缺口面板让用户知道哪些指标缺失，避免把数据不可用误判为风险不存在。
+
+\section{工程可行性分析}
+
+从数据实现看，系统已经具备锂电池产业链知识图谱种子数据、来源注册表、地理位置映射、演示案例和缓存结果。公开数据源可继续扩展，但核心演示不依赖大规模实时数据。
+
+从算法实现看，事件结构化、实体映射、图搜索、可信度计算和风险评分都可以使用轻量规则和内存数据结构完成，不需要训练大型模型。
+
+从演示稳定性看，系统具备演示案例、缓存报告和 fallback 报告机制。即使外部 API 不稳定，也可以展示完整技术闭环。
+
+\section{验证方案}
+
+初赛阶段采用案例验证和人工评估相结合的方式。典型场景包括印尼镍出口政策变化、智利锂矿罢工、红海航运中断等。每个案例从事件抽取、实体映射、可信度状态、传播路径、风险评分、Dashboard 展示和报告生成七个环节进行检查。
+
+\begin{longtable}{p{2.4cm}p{3.5cm}p{7.0cm}}
+\caption{验证矩阵}\label{tab:evaluation}\\
+\toprule
+验证对象 & 验证指标 & 验证方式 \\
+\midrule
+\endfirsthead
+\toprule
+验证对象 & 验证指标 & 验证方式 \\
+\midrule
+\endhead
+事件抽取 & 字段完整率 & 检查事件类型、时间、地点、材料、证据是否完整。 \\
+实体映射 & 节点匹配准确性 & 人工检查事件是否映射到正确图谱节点。 \\
+可信度判断 & 状态一致性 & 检查 confirmed、watchlist、conflicting 是否合理。 \\
+传播路径 & 路径合理性 & 人工判断路径是否符合产业链常识。 \\
+风险评分 & 等级一致性 & 与人工判断的高、中、低风险进行对比。 \\
+报告生成 & 证据引用完整性 & 检查报告是否包含事件、路径、评分和建议。 \\
+Dashboard & 展示一致性 & 检查地图、事件列表、弧线是否与数据一致。 \\
+数据质量 & 缺口提示完整性 & 检查外部数据不可用时是否明确提示。 \\
+\bottomrule
+\end{longtable}
+
+\section{与常见技术方案对比}
+
+\begin{longtable}{p{3.0cm}p{3.2cm}p{3.6cm}p{3.8cm}}
+\caption{技术方案对比}\label{tab:comparison}\\
+\toprule
+方案类型 & 典型能力 & 主要不足 & 本项目改进 \\
+\midrule
+\endfirsthead
+\toprule
+方案类型 & 典型能力 & 主要不足 & 本项目改进 \\
+\midrule
+\endhead
+普通新闻聚合 & 聚合新闻标题和摘要 & 无法判断可信度和影响路径 & 引入事件结构化和图谱传播推理 \\
+通用大模型问答 & 生成自然语言解释 & 容易主观判断和产生幻觉 & 引入证据链约束生成 \\
+普通 RAG & 检索相关文本并回答 & 难表达事件状态和传播结构 & 引入时序状态机和产业链图谱 \\
+传统舆情系统 & 关键词监测和热度分析 & 缺少产业链风险评分 & 引入可解释风险评分 \\
+单一 BI 看板 & 展示指标和图表 & 缺少推理和证据链 & 引入可信度、传播路径和 AI 报告 \\
+\bottomrule
+\end{longtable}
+
+\section{当前边界与后续增强}
+
+当前系统仍处于原型阶段，边界主要包括：知识图谱规模仍有限，尚未覆盖全部矿山、供应商和企业关系；事件抽取仍依赖规则和样例数据，复杂文本抽取需要更多标注样本；风险评分权重仍是专家规则初始化，需要通过历史案例回测和专家打分校准；地图点位部分来自文本和图谱推断，后续需要更精细的地理实体识别；市场代理指标仍需接入更稳定的材料现货价格和航运数据源。
+
+后续增强方向包括：扩展历史风险事件库；构建专家标注验证集；引入图数据库管理大规模产业链关系；增加时间线和节点风险排行；接入企业内部供应商、库存、采购和订单数据；将评分权重从规则初始化升级为“专家校准 + 历史回测 + 参数搜索”的半自动调优方式。
+
+\section{结论}
+
+本项目的技术可行性建立在清晰的模块分工和可运行的工程闭环之上。系统不是简单新闻摘要，也不是单纯调用大模型生成报告，而是以结构化事件为入口，以产业链知识图谱为骨架，以可信度评估为证据过滤，以图谱传播路径为推理依据，以可解释评分为预警标准，以 Dashboard 为交互承载，以大语言模型为受控报告生成器。
+
+这种组合方法既具有比赛展示所需的技术亮点，也具有后续产品化扩展的工程基础。对于新能源锂电池产业链风险研判这一垂直场景，该系统能够体现人工智能技术在行业知识建模、可信推理、图谱计算和智能报告生成中的应用价值。
+
+\end{document}
