@@ -123,7 +123,7 @@ Ablation Study & H5 & 全部指标按组件移除 & 验证各组件贡献及协�
     \item \term{文本嵌入模型}：统一使用 \texttt{text-embedding-3-large}，维度 3072；
     \item \term{随机种子}：统一设置 Python Seed = 42，NumPy Seed = 42，PyTorch Seed = 42；
     \item \term{知识图谱存储}：Neo4j Community 5.20.0，使用同一快照的产业链种子图谱；
-    \item \term{向量数据库}：Milvus 2.4.0，索引类型 IVF\_FLAT（nlist = 128），度量方式余弦距离；
+    \item \term{向量数据库}：pgvector，索引类型 IVFFlat，度量方式余弦距离；
     \item \term{测试硬件}：统一使用同一台 GPU 服务器（配置见表~\ref{tab:exp-env}）；
     \item \term{缓存策略}：统一清空缓存后开始实验，避免缓存偏差。
 \end{itemize}
@@ -151,15 +151,15 @@ s_d = \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_{i,\text{TIGER}} - x_{i,\text{Baseline
 \toprule
 \textbf{配置项} & \textbf{参数} \\
 \midrule
-CPU & Intel Xeon Gold 6438M $\times$ 2，共 64 核 128 线程，2.0 GHz \\
-GPU & NVIDIA A100-SXM-80GB $\times$ 1（LLM 推理）/ NVIDIA RTX 4090 24GB $\times$ 1（嵌入编码） \\
+CPU & Intel 酷睿 Ultra 9 285K \\
+GPU & NVIDIA A800 80GB $\times$ 1（LLM 推理）/ NVIDIA RTX 5080 16GB $\times$ 1（嵌入编码） \\
 内存 & 512 GB DDR5 4800 MHz \\
 存储 & 2 TB NVMe SSD \\
 操作系统 & Ubuntu 22.04.5 LTS \\
 Python & 3.11.9 \\
 PyTorch & 2.4.0 \\
 Neo4j & Community 5.20.0 \\
-Milvus & Standalone 2.4.0 \\
+pgvector & PostgreSQL 16 + pgvector 0.7 \\
 大语言模型 & GPT-4o（2025-11-20 快照），通过 API 调用 \\
 嵌入模型 & text-embedding-3-large，3072 维 \\
 \bottomrule
@@ -228,7 +228,7 @@ Ground Truth 采用\textbf{双盲独立标注 + 专家仲裁}的流程：
 
 \begin{enumerate}
     \item \term{Baseline 1：Keyword Search（关键词检索基线）}。使用 Elasticsearch 8.13 的 BM25 检索算法，基于关键词匹配召回相关新闻和事件。该基线代表传统信息检索方法在产业链风险场景中的表现。
-    \item \term{Baseline 2：Naive RAG（普通向量检索 RAG 基线）}。使用 \texttt{text-embedding-3-large} 将事件文本编码为向量，通过 Milvus 进行余弦相似度检索，将 Top-K 结果输入 LLM 生成回答。该基线代表当前主流的 RAG 问答范式。
+    \item \term{Baseline 2：Naive RAG（普通向量检索 RAG 基线）}。使用 \texttt{text-embedding-3-large} 将事件文本编码为向量，通过 pgvector 进行余弦相似度检索，将 Top-K 结果输入 LLM 生成回答。该基线代表当前主流的 RAG 问答范式。
     \item \term{Baseline 3：Static GraphRAG（静态知识图谱 RAG 基线）}。在 Naive RAG 基础上，引入产业链知识图谱，在检索阶段同时执行文本向量检索和图谱邻域检索。该基线与本文方案的主要区别在于图谱不包含时间戳、有效期和状态信息。该基线用于验证时序增强的独立贡献。
     \item \term{Baseline 4：TIGER-Risk w/o Trust（消融变体）}。在\projectshort 完整系统的基础上去掉 Trust Graph 模块，即使用时序动态图谱，但不进行多源可信度聚合和冲突消解。该基线用于验证 Trust Graph 的独立贡献。
     \item \term{Baseline 5：TIGER-Risk w/o Graph（消融变体）}。在\projectshort 完整系统的基础上去掉图传播推理模块，即 LLM 直接基于 Trust Graph 聚合后的事件文本生成报告，不使用图谱路径结构。该基线用于验证图增强推理的独立贡献。
