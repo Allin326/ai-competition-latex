@@ -321,25 +321,7 @@ S(q,e,t)=\alpha S_{text}(q,e)+\beta S_{graph}(q,e)+\gamma S_{time}(e,t)+\delta S
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[
-    font=\small,
-    stage/.style={draw=LineGray, rounded corners=2mm, thick, align=center, minimum width=3.05cm, minimum height=1.05cm, fill=SoftBlue},
-    our/.style={draw=DeepBlue, rounded corners=2mm, very thick, align=center, minimum width=3.4cm, minimum height=1.2cm, fill=Mint},
-    arr/.style={-{Latex[length=2.2mm]}, thick, draw=LineGray}
-]
-\node[stage] (rag) {普通 RAG\\文本向量召回};
-\node[stage, right=0.85cm of rag] (grag) {GraphRAG\\图谱路径召回};
-\node[stage, right=0.85cm of grag] (tkg) {Temporal KG\\时间状态建模};
-\node[stage, right=0.85cm of tkg] (trust) {Trust Graph\\多源可信评估};
-\node[our, below=1.0cm of tkg] (ours) {\projectshort{}\\时序可信图增强风险推理};
-\draw[arr] (rag) -- (grag);
-\draw[arr] (grag) -- (tkg);
-\draw[arr] (tkg) -- (trust);
-\draw[arr] (grag.south) -- (ours.north west);
-\draw[arr] (tkg.south) -- (ours.north);
-\draw[arr] (trust.south) -- (ours.north east);
-\node[align=center, below=0.25cm of ours, text width=10.5cm] {融合多源采集、事件抽取、时序动态图谱、可信度量化、图拓扑计算、多 Agent 冲突消解与大模型研判生成。};
-\end{tikzpicture}
+\includegraphics[width=0.95\linewidth]{图3.png}
 \caption{项目技术路线在 RAG 体系中的定位}
 \label{fig:tech-position}
 \end{figure}
@@ -1093,6 +1075,13 @@ r_i=(\text{risk\_score},\text{risk\_level},\text{confidence},\text{paths},\text{
 该架构体现三个关键特点。第一，系统从数据入口开始即面向风险事件建模，而非简单文本存储。第二，系统将时间状态、来源可信度和图拓扑关键性作为一等公民写入图谱，使风险推理具备结构依据。第三，系统将 LLM 放置在可控边界内，主要承担信息抽取、证据归纳和报告生成任务，从而避免完全依赖黑箱生成。
 
 \subsubsection{系统核心模块实现与代码证据}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{新增，放在3.2.2 系统核心模块实现与代码证据开头.png}
+\caption{系统核心模块架构总览}
+\label{fig:core-modules}
+\end{figure}
 
 为避免系统停留在概念设计层面，本项目已经围绕新能源锂电池产业链风险推理任务完成了若干核心模块的工程实现。当前原型系统不是简单调用大语言模型生成文本，而是形成了从多源信息接入、风险事件标准化、产业链图谱匹配、传播路径搜索、可信度聚合、风险评分、市场数据监测到智能研判报告生成的完整闭环。
 
