@@ -576,34 +576,7 @@ C(e)=w_s C_{source}(e)+w_m C_{multi}(e)+w_l C_{link}(e)+w_t C_{time}(e)+w_g C_{g
 
 \begin{figure}[H]
 \centering
-\resizebox{\linewidth}{!}{
-\begin{tikzpicture}[
-    font=\footnotesize, % 全局字体降级为 footnotesize
-    % 左侧层级节点尺寸等比缩减
-    layer/.style={draw=LineGray, rounded corners=2mm, thick, align=center, text width=2.0cm, minimum height=0.7cm, fill=SoftBlue},
-    % 右侧决策节点尺寸等比缩减
-    decision/.style={draw=DeepBlue, rounded corners=2mm, very thick, align=center, text width=4.0cm, minimum height=0.9cm, fill=Mint},
-    % 箭头尺寸同步缩小以适配新比例
-    arr/.style={-{Latex[length=1.8mm]}, thick, draw=LineGray}
-]
-% 左侧输入层，垂直间距压缩至 0.2cm
-\node[layer] (l1) {实体一致性};
-\node[layer, below=0.2cm of l1] (l2) {事件一致性};
-\node[layer, below=0.2cm of l2] (l3) {时间一致性};
-\node[layer, below=0.2cm of l3] (l4) {来源一致性};
-\node[layer, below=0.2cm of l4] (l5) {图谱一致性};
-
-% 中间节点水平间距压缩至 0.8cm，并微调英文换行以适应变窄的文本盒
-\node[decision, right=0.8cm of l3] (c) {综合置信度 $C(e)$\\confirmed / conflicting\\unverified / resolved};
-
-% 尾部节点垂直间距压缩至 0.5cm
-\node[decision, below=0.5cm of c] (risk) {风险评分与推荐排序\\高价值事件优先进入研判};
-
-% 绘制连线
-\foreach \x in {l1,l2,l3,l4,l5}{\draw[arr] (\x.east) -- (c.west);}
-\draw[arr] (c.south) -- (risk.north);
-\end{tikzpicture}
-}
+\includegraphics[width=0.85\linewidth]{图6.png}
 \caption{多层一致性驱动的可信融合机制}
 \label{fig:consistency-fusion}
 \end{figure}
@@ -808,24 +781,7 @@ P(e)=\lambda_1 R(e)+\lambda_2 C(e)+\lambda_3 K(v_e)+\lambda_4 F(e,t)+\lambda_5 U
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[
-    font=\small,
-    layer/.style={draw=DeepBlue, rounded corners=2mm, very thick, align=center, minimum width=12.6cm, minimum height=0.9cm, fill=SoftBlue},
-    sub/.style={draw=LineGray, rounded corners=1mm, align=center, minimum width=2.65cm, minimum height=0.58cm, fill=white},
-    arr/.style={-{Latex[length=2.2mm]}, thick, draw=LineGray}
-]
-\node[layer] (l1) {1. 多源数据接入层：新闻 RSS、政策公告、制裁名单、市场价格、航运物流、气候灾害、社交舆情};
-\node[layer, below=0.28cm of l1] (l2) {2. 事件抽取与结构化层：大模型抽取、实体消歧、字段校验、事件去重、样例库更新};
-\node[layer, below=0.28cm of l2] (l3) {3. 时序动态图谱构建层：实体关系、事件节点、时间戳、有效期、状态机、历史版本};
-\node[layer, below=0.28cm of l3] (l4) {4. 可信度评估与冲突消解层：来源信誉度、多源一致性、Trust Graph、Agent 辩论机制};
-\node[layer, below=0.28cm of l4] (l5) {5. 风险传播推理与评分层：路径搜索、拓扑关键性、传播范围、风险分数、推荐排序};
-\node[layer, below=0.28cm of l5] (l6) {6. 可视化展示与智能报告层：全球地图、产业链图谱、时间线、风险榜、证据面板、AI 报告};
-\draw[arr] (l1) -- (l2);
-\draw[arr] (l2) -- (l3);
-\draw[arr] (l3) -- (l4);
-\draw[arr] (l4) -- (l5);
-\draw[arr] (l5) -- (l6);
-\end{tikzpicture}
+\includegraphics[width=0.95\linewidth]{图10.png}
 \caption{系统平台六层架构设计}
 \label{fig:platform-architecture}
 \end{figure}
@@ -2165,6 +2121,13 @@ export async function buildLithiumDashboardData({ latest = {}, currentData = nul
 
 \subsubsection{多源数据接入与数据治理}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{新增，放在3.2.3 多源数据接入与数据治理.png}
+\caption{多源数据接入架构}
+\label{fig:data-ingestion}
+\end{figure}
+
 系统接入数据可分为七类：全球新闻、政策公告、制裁合规、市场价格、航运物流、气候灾害和社交舆情。不同来源数据在格式、更新频率、可信程度和噪声水平上存在差异，因此需要在进入事件抽取模块之前完成基础治理。
 
 数据治理流程包括：
@@ -2181,6 +2144,13 @@ export async function buildLithiumDashboardData({ latest = {}, currentData = nul
 数据接入层的目标不是“越多越好”，而是形成面向产业链风险的高质量事件候选池。对于比赛系统而言，可优先保证新闻、政策、制裁、价格和航运五类数据的稳定接入；对于增强版系统，可继续扩展海关贸易、企业财报、专利动态、卫星灾害、社媒情绪等数据源。
 
 \subsubsection{事件抽取与结构化建模}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{3.2.4 事件抽取与结构化建模.png}
+\caption{事件抽取与结构化建模流程}
+\label{fig:event-extraction}
+\end{figure}
 
 系统将非结构化文本抽取为标准风险事件对象。事件对象既要满足前端展示需求，也要满足图谱写入和风险评分需求。其核心字段定义如下：
 \begin{equation}
@@ -2234,6 +2204,13 @@ t_i, c_i, l_i, \mathcal{E}_i, \mathcal{A}_i, s_i, q_i, u_i, z_i
 为降低抽取错误，系统采用“三重约束”机制。第一，使用事件 Schema 约束输出字段和枚举值，避免 LLM 自由生成不可解析字段。第二，使用产业链实体别名表进行实体对齐，将“印度尼西亚”“印尼”“Indonesia”等不同表述统一映射为同一图谱节点。第三，使用规则校验和置信度阈值过滤异常事件，例如缺少时间、缺少实体、事件类型不合法或严重度超出区间的抽取结果。
 
 \subsubsection{时序可信动态图谱构建}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{3.2.5 时序可信动态图谱构建.png}
+\caption{时序可信动态图谱构建流程}
+\label{fig:temporal-graph}
+\end{figure}
 
 普通知识图谱通常将关系表示为静态三元组 $(h,r,t)$，难以表达事件随时间演化、关系失效、冲突修正和风险缓解等动态现象。本项目将产业链图谱扩展为时序可信动态图谱：
 \begin{equation}
